@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Léo Loyen Portfolio</title>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06070C; --bg2: #0D0E14; --panel: #0D0E14;
+  --line: #0D0F18; --line2: #161B2C;
+  --text: #EAECF5; --muted: #8A92AB; --muted2: #4A5268;
+  --cyan: #405FFA; --magenta: #09BBC8;
+  --neon: linear-gradient(120deg, #405FFA, #3B3664);
+  --neon-gold: linear-gradient(120deg, #09BBC8, #07A0AC);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Clash Display', sans-serif; min-height: 100vh; }
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  background: var(--panel); border: 1px solid var(--line2); border-radius: 20px;
+  padding: 48px; width: 100%; max-width: 400px; text-align: center;
+}
+.login-box h1 { font-size: 22px; margin-bottom: 8px; }
+.login-box p { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+.field { width: 100%; padding: 14px 18px; background: var(--bg); border: 1px solid var(--line2);
+  border-radius: 10px; color: var(--text); font-family: 'Clash Display', sans-serif;
+  font-size: 14px; outline: none; transition: .2s; }
+.field:focus { border-color: var(--cyan); }
+.btn-primary {
+  width: 100%; padding: 14px; border-radius: 100px; border: none; cursor: pointer;
+  background: var(--neon); color: #fff; font-family: 'Clash Display', sans-serif;
+  font-size: 14px; font-weight: 600; margin-top: 14px; transition: .2s;
+  background: linear-gradient(120deg, #405FFA, #3B3664);
+}
+.btn-primary:hover { opacity: .85; }
+.error-msg { color: #ff5f6d; font-size: 13px; margin-top: 10px; display: none; }
+
+/* ── ADMIN UI ── */
+#admin-screen { display: none; }
+.admin-nav {
+  position: sticky; top: 0; z-index: 100; background: rgba(6,7,12,.95);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);
+  padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+}
+.admin-nav h1 { font-size: 16px; }
+.admin-nav span { color: var(--magenta); }
+.btn-logout {
+  padding: 8px 18px; border-radius: 100px; border: 1px solid var(--line2);
+  background: none; color: var(--muted); font-family: 'Clash Display', sans-serif;
+  font-size: 12px; cursor: pointer; transition: .2s;
+}
+.btn-logout:hover { border-color: #ff5f6d; color: #ff5f6d; }
+
+.admin-body { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+/* ── TOOLBAR ── */
+.toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+.toolbar h2 { font-size: 20px; }
+.btn-new {
+  padding: 12px 24px; border-radius: 100px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #09BBC8, #07A0AC);
+  color: #06070C; font-family: 'Clash Display', sans-serif;
+  font-size: 13px; font-weight: 600; transition: .2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-new:hover { opacity: .85; transform: translateY(-1px); }
+
+/* ── GRILLE PROJETS ── */
+.projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media(max-width: 800px) { .projects-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width: 500px) { .projects-grid { grid-template-columns: 1fr; } }
+
+.project-card {
+  background: var(--panel); border: 1px solid var(--line2); border-radius: 16px;
+  overflow: hidden; transition: .3s; position: relative;
+}
+.project-card:hover { border-color: var(--cyan); transform: translateY(-3px); }
+.card-thumb {
+  width: 100%; aspect-ratio: 4/3; background: var(--bg);
+  background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center; color: var(--muted2);
+  font-size: 12px; letter-spacing: 1px;
+}
+.card-body { padding: 16px; }
+.card-cat {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.cat-evenementiel { color: var(--magenta); }
+.cat-archviz { color: var(--cyan); }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+.card-actions { display: flex; gap: 8px; }
+.btn-edit, .btn-del {
+  flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--line2);
+  font-family: 'Clash Display', sans-serif; font-size: 12px; cursor: pointer; transition: .2s;
+}
+.btn-edit { background: none; color: var(--text); }
+.btn-edit:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn-del { background: none; color: var(--muted); }
+.btn-del:hover { border-color: #ff5f6d; color: #ff5f6d; }
+
+.empty-state {
+  grid-column: 1/-1; text-align: center; padding: 80px 20px;
+  color: var(--muted); font-size: 15px;
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(6,7,12,.85); backdrop-filter: blur(8px);
+  z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--panel); border: 1px solid var(--line2); border-radius: 20px;
+  width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
+  padding: 36px;
+}
+.modal h2 { font-size: 18px; margin-bottom: 28px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--line2);
+  border-radius: 10px; color: var(--text); font-family: 'Clash Display', sans-serif;
+  font-size: 14px; outline: none; transition: .2s;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--cyan); }
+.form-group textarea { resize: vertical; min-height: 100px; }
+.form-group select option { background: var(--bg2); }
+
+/* Images supplémentaires */
+.images-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.img-row { display: flex; gap: 8px; }
+.img-row input { flex: 1; }
+.btn-remove-img {
+  padding: 0 12px; border-radius: 8px; border: 1px solid var(--line2);
+  background: none; color: #ff5f6d; cursor: pointer; font-size: 16px; transition: .2s;
+}
+.btn-remove-img:hover { border-color: #ff5f6d; }
+.btn-add-img {
+  padding: 8px 16px; border-radius: 8px; border: 1px dashed var(--line2);
+  background: none; color: var(--muted); font-family: 'Clash Display', sans-serif;
+  font-size: 12px; cursor: pointer; transition: .2s; width: 100%;
+}
+.btn-add-img:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.modal-actions { display: flex; gap: 12px; margin-top: 28px; }
+.btn-save {
+  flex: 1; padding: 14px; border-radius: 100px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #405FFA, #3B3664);
+  color: #fff; font-family: 'Clash Display', sans-serif; font-size: 14px; font-weight: 600; transition: .2s;
+}
+.btn-save:hover { opacity: .85; }
+.btn-cancel {
+  padding: 14px 24px; border-radius: 100px; border: 1px solid var(--line2);
+  background: none; color: var(--muted); font-family: 'Clash Display', sans-serif;
+  font-size: 14px; cursor: pointer; transition: .2s;
+}
+.btn-cancel:hover { border-color: var(--text); color: var(--text); }
+
+.toast {
+  position: fixed; bottom: 30px; right: 30px; z-index: 9999;
+  background: var(--panel); border: 1px solid var(--magenta);
+  border-radius: 12px; padding: 14px 20px; font-size: 14px;
+  color: var(--magenta); display: none; animation: slideup .3s ease;
+}
+@keyframes slideup { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.drag-info { font-size: 11px; color: var(--muted2); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Admin Portfolio</h1>
+    <p>Accès réservé — Léo Loyen</p>
+    <input type="password" class="field" id="pwd-input" placeholder="Mot de passe" />
+    <button class="btn-primary" onclick="login()">Connexion</button>
+    <p class="error-msg" id="login-error">Mot de passe incorrect</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <nav class="admin-nav">
+    <h1>Admin <span>Portfolio</span></h1>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </nav>
+
+  <div class="admin-body">
+    <div class="toolbar">
+      <h2 id="proj-count">Projets (0)</h2>
+      <button class="btn-new" onclick="openModal()">+ Nouveau projet</button>
+    </div>
+    <div class="projects-grid" id="projects-grid">
+      <div class="empty-state">
+        <div class="icon">🎨</div>
+        <p>Aucun projet pour l'instant.<br>Clique sur "Nouveau projet" pour commencer.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Nouveau projet</h2>
+    <div class="form-group">
+      <label>Titre du projet *</label>
+      <input type="text" id="f-titre" placeholder="Ex: Soirée Gala 2024" />
+    </div>
+    <div class="form-group">
+      <label>Catégorie *</label>
+      <select id="f-cat">
+        <option value="evenementiel">Événementiel</option>
+        <option value="archviz">Archviz</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Description courte</label>
+      <input type="text" id="f-desc" placeholder="Ex: Scénographie lumière pour concert..." />
+    </div>
+    <div class="form-group">
+      <label>Image principale (URL ou chemin)</label>
+      <input type="text" id="f-img" placeholder="images/mon-projet.jpg" />
+      <p class="drag-info">💡 Mets tes images dans le dossier images/ sur GitHub</p>
+    </div>
+    <div class="form-group">
+      <label>Images supplémentaires (page projet)</label>
+      <div class="images-list" id="images-list"></div>
+      <button class="btn-add-img" onclick="addImageField()">+ Ajouter une image</button>
+    </div>
+    <div class="form-group">
+      <label>Texte de présentation (page projet)</label>
+      <textarea id="f-text" placeholder="Décris le projet, le contexte, les outils utilisés..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveProjet()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let token = null;
+let projets = [];
+let editIndex = null;
+
+// ── LOGIN ──────────────────────────────────────────────
+async function login() {
+  const pwd = document.getElementById('pwd-input').value;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    if (data.success) {
+      token = data.token;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadProjets();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+function logout() {
+  token = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-screen').style.display = 'none';
+}
+
+// ── LOAD ───────────────────────────────────────────────
+async function loadProjets() {
+  const res = await fetch('/api/projets');
+  projets = await res.json();
+  renderGrid();
+}
+
+// ── RENDER ─────────────────────────────────────────────
+function renderGrid() {
+  const grid = document.getElementById('projects-grid');
+  document.getElementById('proj-count').textContent = `Projets (${projets.length})`;
+  if (!projets.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">🎨</div><p>Aucun projet pour l'instant.<br>Clique sur "Nouveau projet" pour commencer.</p></div>`;
+    return;
+  }
+  grid.innerHTML = projets.map((p, i) => `
+    <div class="project-card">
+      <div class="card-thumb" style="${p.image ? `background-image:url('${p.image}')` : ''}">
+        ${!p.image ? 'AUCUNE IMAGE' : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-cat cat-${p.categorie}">${p.categorie === 'evenementiel' ? 'Événementiel' : 'Archviz'}</div>
+        <div class="card-title">${p.titre}</div>
+        <div class="card-desc">${p.description || '—'}</div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="editProjet(${i})">✏️ Modifier</button>
+          <button class="btn-del" onclick="deleteProjet(${i})">🗑 Suppr.</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function openModal(index = null) {
+  editIndex = index;
+  document.getElementById('modal-title').textContent = index !== null ? 'Modifier le projet' : 'Nouveau projet';
+  document.getElementById('images-list').innerHTML = '';
+
+  if (index !== null) {
+    const p = projets[index];
+    document.getElementById('f-titre').value = p.titre || '';
+    document.getElementById('f-cat').value = p.categorie || 'evenementiel';
+    document.getElementById('f-desc').value = p.description || '';
+    document.getElementById('f-img').value = p.image || '';
+    document.getElementById('f-text').value = p.texte || '';
+    (p.images || []).forEach(src => addImageField(src));
+  } else {
+    document.getElementById('f-titre').value = '';
+    document.getElementById('f-cat').value = 'evenementiel';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-img').value = '';
+    document.getElementById('f-text').value = '';
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function editProjet(i) { openModal(i); }
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editIndex = null;
+}
+
+function addImageField(value = '') {
+  const list = document.getElementById('images-list');
+  const row = document.createElement('div');
+  row.className = 'img-row';
+  row.innerHTML = `
+    <input type="text" class="field extra-img" placeholder="images/extra.jpg" value="${value}" />
+    <button class="btn-remove-img" onclick="this.parentElement.remove()">×</button>
+  `;
+  list.appendChild(row);
+}
+
+// ── SAVE ───────────────────────────────────────────────
+async function saveProjet() {
+  const titre = document.getElementById('f-titre').value.trim();
+  if (!titre) { showToast('⚠️ Le titre est obligatoire'); return; }
+
+  const extraImgs = [...document.querySelectorAll('.extra-img')].map(i => i.value.trim()).filter(Boolean);
+
+  const projet = {
+    id: editIndex !== null ? projets[editIndex].id : Date.now(),
+    titre,
+    categorie: document.getElementById('f-cat').value,
+    description: document.getElementById('f-desc').value.trim(),
+    image: document.getElementById('f-img').value.trim(),
+    images: extraImgs,
+    texte: document.getElementById('f-text').value.trim(),
+    date: editIndex !== null ? projets[editIndex].date : new Date().toISOString()
+  };
+
+  if (editIndex !== null) {
+    projets[editIndex] = projet;
+  } else {
+    projets.unshift(projet);
+  }
+
+  await saveToDB();
+  closeModal();
+  renderGrid();
+  showToast('✅ Projet enregistré !');
+}
+
+async function deleteProjet(i) {
+  if (!confirm(`Supprimer "${projets[i].titre}" ?`)) return;
+  projets.splice(i, 1);
+  await saveToDB();
+  renderGrid();
+  showToast('🗑 Projet supprimé');
+}
+
+async function saveToDB() {
+  await fetch('/api/projets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+    body: JSON.stringify(projets)
+  });
+}
+
+// ── TOAST ──────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// Fermer modal en cliquant dehors
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
