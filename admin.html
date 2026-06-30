@@ -171,7 +171,23 @@ body { background: var(--bg); color: var(--text); font-family: 'Clash Display', 
 }
 @keyframes slideup { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-.drag-info { font-size: 11px; color: var(--muted2); margin-top: 6px; }
+.btn-upload {
+  padding: 12px 16px; border-radius: 10px; border: 1px solid var(--magenta);
+  background: none; color: var(--magenta); font-family: 'Clash Display', sans-serif;
+  font-size: 13px; cursor: pointer; transition: .2s; white-space: nowrap;
+}
+.btn-upload:hover { background: rgba(9,187,200,.1); }
+.img-preview {
+  margin-top: 10px; width: 100%; aspect-ratio: 4/3; border-radius: 10px;
+  border: 1px solid var(--line2); background-size: cover; background-position: center;
+  max-height: 180px;
+}
+.btn-upload-sm {
+  padding: 0 12px; border-radius: 8px; border: 1px solid var(--magenta);
+  background: none; color: var(--magenta); cursor: pointer; font-size: 13px; transition: .2s;
+}
+.btn-upload-sm:hover { background: rgba(9,187,200,.1); }
+
 </style>
 </head>
 <body>
@@ -228,9 +244,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Clash Display', 
       <input type="text" id="f-desc" placeholder="Ex: Scénographie lumière pour concert..." />
     </div>
     <div class="form-group">
-      <label>Image principale (URL ou chemin)</label>
-      <input type="text" id="f-img" placeholder="images/mon-projet.jpg" />
-      <p class="drag-info">💡 Mets tes images dans le dossier images/ sur GitHub</p>
+      <label>Image principale (miniature)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="f-img" placeholder="URL automatique après upload..." style="flex:1" />
+        <button class="btn-upload" onclick="uploadImage('f-img')">📤 Upload</button>
+      </div>
+      <div id="f-img-preview" class="img-preview" style="display:none"></div>
     </div>
     <div class="form-group">
       <label>Images supplémentaires (page projet)</label>
@@ -353,16 +372,57 @@ function closeModal() {
   editIndex = null;
 }
 
+// ── UPLOAD VERS R2 (via Worker) ────────────────────────
+function uploadImage(targetInputId, onSuccess) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    showToast('⏳ Upload en cours...');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': token },
+        body: fd
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (targetInputId) {
+          document.getElementById(targetInputId).value = data.url;
+          const preview = document.getElementById(targetInputId + '-preview');
+          if (preview) {
+            preview.style.display = 'block';
+            preview.style.backgroundImage = `url('${data.url}')`;
+          }
+        }
+        if (onSuccess) onSuccess(data.url);
+        showToast('✅ Image uploadée !');
+      } else {
+        showToast('❌ Erreur upload : ' + (data.error?.message || 'inconnu'));
+      }
+    } catch(err) {
+      showToast('❌ Erreur upload');
+    }
+  };
+  input.click();
+}
+
 function addImageField(value = '') {
   const list = document.getElementById('images-list');
   const row = document.createElement('div');
   row.className = 'img-row';
   row.innerHTML = `
-    <input type="text" class="field extra-img" placeholder="images/extra.jpg" value="${value}" />
+    <input type="text" class="field extra-img" placeholder="URL après upload..." value="${value}" style="flex:1" />
+    <button class="btn-upload-sm" onclick="uploadImage(null, url => this.previousElementSibling.value = url)">📤</button>
     <button class="btn-remove-img" onclick="this.parentElement.remove()">×</button>
   `;
   list.appendChild(row);
 }
+
 
 // ── SAVE ───────────────────────────────────────────────
 async function saveProjet() {
