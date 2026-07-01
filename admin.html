@@ -254,7 +254,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Clash Display', 
     <div class="form-group">
       <label>Images supplémentaires (page projet)</label>
       <div class="images-list" id="images-list"></div>
-      <button class="btn-add-img" onclick="addImageField()">+ Ajouter une image</button>
+      <button class="btn-add-img" onclick="uploadMultiple()">📤 Uploader plusieurs images</button>
     </div>
     <div class="form-group">
       <label>Texte de présentation (page projet)</label>
@@ -373,6 +373,19 @@ function closeModal() {
 }
 
 // ── UPLOAD VERS R2 (via Worker) ────────────────────────
+async function uploadSingleFile(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'Authorization': token },
+    body: fd
+  });
+  const data = await res.json();
+  if (data.success) return data.url;
+  throw new Error(data.error || 'Erreur upload');
+}
+
 function uploadImage(targetInputId, onSuccess) {
   const input = document.createElement('input');
   input.type = 'file';
@@ -382,31 +395,45 @@ function uploadImage(targetInputId, onSuccess) {
     if (!file) return;
     showToast('⏳ Upload en cours...');
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Authorization': token },
-        body: fd
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (targetInputId) {
-          document.getElementById(targetInputId).value = data.url;
-          const preview = document.getElementById(targetInputId + '-preview');
-          if (preview) {
-            preview.style.display = 'block';
-            preview.style.backgroundImage = `url('${data.url}')`;
-          }
+      const url = await uploadSingleFile(file);
+      if (targetInputId) {
+        document.getElementById(targetInputId).value = url;
+        const preview = document.getElementById(targetInputId + '-preview');
+        if (preview) {
+          preview.style.display = 'block';
+          preview.style.backgroundImage = `url('${url}')`;
         }
-        if (onSuccess) onSuccess(data.url);
-        showToast('✅ Image uploadée !');
-      } else {
-        showToast('❌ Erreur upload : ' + (data.error?.message || 'inconnu'));
       }
+      if (onSuccess) onSuccess(url);
+      showToast('✅ Image uploadée !');
     } catch(err) {
       showToast('❌ Erreur upload');
     }
+  };
+  input.click();
+}
+
+function uploadMultiple() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.onchange = async (e) => {
+    const files = [...e.target.files];
+    if (!files.length) return;
+    showToast(`⏳ Upload de ${files.length} image(s)...`);
+    let ok = 0;
+    for (const file of files) {
+      try {
+        const url = await uploadSingleFile(file);
+        addImageField(url);
+        ok++;
+        showToast(`⏳ ${ok}/${files.length} uploadées...`);
+      } catch(err) {
+        showToast(`❌ Erreur sur ${file.name}`);
+      }
+    }
+    showToast(`✅ ${ok}/${files.length} images uploadées !`);
   };
   input.click();
 }
