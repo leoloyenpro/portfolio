@@ -658,7 +658,9 @@ if(gc){
 }
 
 document.getElementById('burger').onclick=()=>document.getElementById('contact').scrollIntoView({behavior:'smooth'});
-</script>// ── CHARGEMENT DES PROJETS DEPUIS L'API ──────────────────────
+</script>
+<script>
+// ── CHARGEMENT DES PROJETS DEPUIS L'API ──────────────────────
 async function loadProjets() {
   try {
     const res = await fetch('/api/projets');
@@ -708,5 +710,6 @@ function setupFilters(projets) {
 }
 
 loadProjets();
+</script>
 </body>
 </html>
