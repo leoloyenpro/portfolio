@@ -239,6 +239,24 @@ body { background: var(--bg); color: var(--text); font-family: 'Clash Display', 
         <option value="archviz">Archviz</option>
       </select>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group">
+        <label>Année</label>
+        <input type="number" id="f-annee" placeholder="2024" min="2000" max="2099" />
+      </div>
+      <div class="form-group">
+        <label>Statut</label>
+        <select id="f-statut">
+          <option value="publie">✅ Publié</option>
+          <option value="brouillon">📝 Brouillon</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tags (séparés par des virgules)</label>
+      <input type="text" id="f-tags" placeholder="Ex: Blender, Concert, Lumière, Scénographie..." />
+      <p class="drag-info">💡 Ces tags permettront de filtrer tes projets</p>
+    </div>
     <div class="form-group">
       <label>Description courte</label>
       <input type="text" id="f-desc" placeholder="Ex: Scénographie lumière pour concert..." />
@@ -322,12 +340,21 @@ function renderGrid() {
     grid.innerHTML = `<div class="empty-state"><div class="icon">🎨</div><p>Aucun projet pour l'instant.<br>Clique sur "Nouveau projet" pour commencer.</p></div>`;
     return;
   }
-  grid.innerHTML = projets.map((p, i) => `
-    <div class="project-card">
+  grid.innerHTML = projets.map((p, i) => {
+    const tags = (p.tags || '').split(',').map(t=>t.trim()).filter(Boolean);
+    const tagBadges = tags.slice(0,3).map(t=>`<span class="badge badge-tag">${t}</span>`).join('');
+    return `
+    <div class="project-card" draggable="true" data-index="${i}">
+      <span class="drag-handle">⠿</span>
       <div class="card-thumb" style="${p.image ? `background-image:url('${p.image}')` : ''}">
         ${!p.image ? 'AUCUNE IMAGE' : ''}
       </div>
       <div class="card-body">
+        <div class="card-badges">
+          <span class="badge ${p.statut === 'brouillon' ? 'badge-brouillon' : 'badge-publie'}">${p.statut === 'brouillon' ? '📝 Brouillon' : '✅ Publié'}</span>
+          ${p.annee ? `<span class="badge badge-annee">${p.annee}</span>` : ''}
+          ${tagBadges}
+        </div>
         <div class="card-cat cat-${p.categorie}">${p.categorie === 'evenementiel' ? 'Événementiel' : 'Archviz'}</div>
         <div class="card-title">${p.titre}</div>
         <div class="card-desc">${p.description || '—'}</div>
@@ -337,7 +364,8 @@ function renderGrid() {
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
+  setupDragDrop();
 }
 
 // ── MODAL ──────────────────────────────────────────────
@@ -350,15 +378,25 @@ function openModal(index = null) {
     const p = projets[index];
     document.getElementById('f-titre').value = p.titre || '';
     document.getElementById('f-cat').value = p.categorie || 'evenementiel';
+    document.getElementById('f-annee').value = p.annee || '';
+    document.getElementById('f-statut').value = p.statut || 'publie';
+    document.getElementById('f-tags').value = p.tags || '';
     document.getElementById('f-desc').value = p.description || '';
     document.getElementById('f-img').value = p.image || '';
     document.getElementById('f-text').value = p.texte || '';
+    const preview = document.getElementById('f-img-preview');
+    if (p.image) { preview.style.display='block'; preview.style.backgroundImage=`url('${p.image}')`; }
+    else { preview.style.display='none'; }
     (p.images || []).forEach(src => addImageField(src));
   } else {
     document.getElementById('f-titre').value = '';
     document.getElementById('f-cat').value = 'evenementiel';
+    document.getElementById('f-annee').value = new Date().getFullYear();
+    document.getElementById('f-statut').value = 'publie';
+    document.getElementById('f-tags').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('f-img').value = '';
+    document.getElementById('f-img-preview').style.display = 'none';
     document.getElementById('f-text').value = '';
   }
 
@@ -462,6 +500,9 @@ async function saveProjet() {
     id: editIndex !== null ? projets[editIndex].id : Date.now(),
     titre,
     categorie: document.getElementById('f-cat').value,
+    annee: document.getElementById('f-annee').value || '',
+    statut: document.getElementById('f-statut').value,
+    tags: document.getElementById('f-tags').value.trim(),
     description: document.getElementById('f-desc').value.trim(),
     image: document.getElementById('f-img').value.trim(),
     images: extraImgs,
@@ -494,6 +535,38 @@ async function saveToDB() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': token },
     body: JSON.stringify(projets)
+  });
+}
+
+// ── DRAG & DROP ────────────────────────────────────────
+function setupDragDrop() {
+  const cards = document.querySelectorAll('.project-card[draggable]');
+  let dragIdx = null;
+
+  cards.forEach(card => {
+    card.addEventListener('dragstart', () => {
+      dragIdx = parseInt(card.dataset.index);
+      setTimeout(() => card.style.opacity = '.4', 0);
+    });
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '1';
+      document.querySelectorAll('.project-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', async e => {
+      e.preventDefault();
+      const dropIdx = parseInt(card.dataset.index);
+      if (dragIdx === null || dragIdx === dropIdx) return;
+      const moved = projets.splice(dragIdx, 1)[0];
+      projets.splice(dropIdx, 0, moved);
+      await saveToDB();
+      renderGrid();
+      showToast('✅ Ordre sauvegardé !');
+    });
   });
 }
 
