@@ -20,44 +20,51 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Clash Display',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 
-/* GRID BG */
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 50% 0%,#000 0%,transparent 85%);opacity:.4}
-
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;backdrop-filter:blur(12px);background:rgba(6,7,12,.95);border-bottom:1px solid var(--line)}
 .logo{font-family:'Clash Display';font-weight:700;font-size:17px;letter-spacing:.5px}
 .btn-back{padding:9px 20px;border-radius:100px;border:1px solid var(--line2);color:var(--muted);font-family:'Clash Display';font-size:13px;transition:.2s;display:inline-flex;align-items:center;gap:8px}
 .btn-back:hover{border-color:var(--cyan);color:var(--cyan)}
 
-/* HERO IMAGE */
-.projet-hero{margin-top:70px;width:100%;aspect-ratio:16/7;background:var(--bg2);background-size:cover;background-position:center;position:relative}
-.projet-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 40%,var(--bg) 100%)}
-
 /* CONTENU */
-.projet-body{max-width:860px;margin:0 auto;padding:0 24px 100px}
-.projet-meta{padding:48px 0 36px;border-bottom:1px solid var(--line)}
+.projet-body{max-width:1100px;margin:0 auto;padding:0 24px 100px}
+.projet-meta{padding:130px 0 40px;border-bottom:1px solid var(--line)}
 .projet-cat{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
 .cat-evenementiel{color:var(--magenta)}
 .cat-archviz{color:var(--cyan)}
 .projet-titre{font-family:'Clash Display';font-weight:700;font-size:clamp(32px,5vw,60px);letter-spacing:-.02em;line-height:1.04;margin-bottom:20px}
 .projet-desc{color:var(--muted);font-size:18px;max-width:620px}
-.projet-date{font-size:12px;color:var(--muted2);margin-top:14px;letter-spacing:.5px}
+.projet-meta-info{display:flex;gap:20px;margin-top:18px;flex-wrap:wrap;align-items:center}
+.projet-date{font-size:12px;color:var(--muted2);letter-spacing:.5px}
+.projet-tags{display:flex;gap:8px;flex-wrap:wrap}
+.projet-tags span{font-size:11px;padding:5px 12px;border:1px solid var(--line2);border-radius:100px;color:var(--muted);letter-spacing:.5px}
 
-.projet-texte{padding:48px 0;color:var(--muted);font-size:16px;line-height:1.8;white-space:pre-wrap}
+.projet-texte{padding:48px 0;color:var(--muted);font-size:16px;line-height:1.8;white-space:pre-wrap;max-width:760px}
 
-/* GALERIE IMAGES */
-.projet-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 0 60px}
-.projet-gallery img{width:100%;border-radius:12px;border:1px solid var(--line2);aspect-ratio:4/3;object-fit:cover;transition:.3s}
-.projet-gallery img:hover{transform:scale(1.02);border-color:var(--line2)}
-.projet-gallery .full-width{grid-column:1/-1;aspect-ratio:16/7}
+/* GALERIE IMAGES - 3 colonnes */
+.projet-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 0 60px}
+.projet-gallery img{width:100%;border-radius:12px;border:1px solid var(--line2);aspect-ratio:4/3;object-fit:cover;transition:.3s;cursor:pointer;display:block}
+.projet-gallery img:hover{transform:scale(1.02);border-color:var(--cyan);box-shadow:0 0 30px -8px rgba(64,95,250,.5)}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(6,7,12,.96);backdrop-filter:blur(10px);z-index:1000;display:none;align-items:center;justify-content:center;padding:40px;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:95%;max-height:95%;object-fit:contain;border-radius:8px;box-shadow:0 20px 80px -20px rgba(0,0,0,.9)}
+.lightbox-close{position:fixed;top:24px;right:32px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(6,7,12,.6);color:var(--text);font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.2s;z-index:1001}
+.lightbox-close:hover{border-color:var(--magenta);color:var(--magenta)}
+.lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid var(--line2);background:rgba(6,7,12,.6);color:var(--text);font-size:24px;cursor:pointer;display:grid;place-items:center;transition:.2s;z-index:1001}
+.lightbox-nav:hover{border-color:var(--cyan);color:var(--cyan)}
+.lightbox-prev{left:32px}
+.lightbox-next{right:32px}
 
 /* LOADING */
 #loading{min-height:60vh;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
-#not-found{min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;display:none}
+#not-found{min-height:70vh;flex-direction:column;align-items:center;justify-content:center;text-align:center;display:none}
 #not-found h2{font-size:24px;margin-bottom:12px}
 #not-found p{color:var(--muted)}
 
-@media(max-width:600px){.projet-gallery{grid-template-columns:1fr}}
+@media(max-width:800px){.projet-gallery{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.projet-gallery{grid-template-columns:1fr}.lightbox-nav{width:42px;height:42px;font-size:20px}.lightbox-prev{left:12px}.lightbox-next{right:12px}}
 </style>
 </head>
 <body>
@@ -70,28 +77,39 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 <div id="loading">Chargement...</div>
 
 <div id="not-found">
-  <div>
-    <h2>Projet introuvable</h2>
-    <p>Ce projet n'existe pas ou a été supprimé.</p>
-    <a href="index.html" style="color:var(--cyan);margin-top:20px;display:inline-block">← Retour au portfolio</a>
-  </div>
+  <h2>Projet introuvable</h2>
+  <p>Ce projet n'existe pas ou a été supprimé.</p>
+  <a href="index.html" style="color:var(--cyan);margin-top:20px;display:inline-block">← Retour au portfolio</a>
 </div>
 
 <div id="projet-content" style="display:none">
-  <div class="projet-hero" id="hero-img"></div>
   <div class="projet-body">
     <div class="projet-meta">
       <div class="projet-cat" id="p-cat"></div>
       <h1 class="projet-titre" id="p-titre"></h1>
       <p class="projet-desc" id="p-desc"></p>
-      <p class="projet-date" id="p-date"></p>
+      <div class="projet-meta-info">
+        <span class="projet-date" id="p-date"></span>
+        <div class="projet-tags" id="p-tags"></div>
+      </div>
     </div>
     <div class="projet-texte" id="p-texte"></div>
     <div class="projet-gallery" id="p-gallery"></div>
   </div>
 </div>
 
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox(event)">×</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLightbox(event,-1)">‹</button>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+  <button class="lightbox-nav lightbox-next" onclick="navLightbox(event,1)">›</button>
+</div>
+
 <script>
+let galleryImages = [];
+let currentImg = 0;
+
 async function loadProjet() {
   const params = new URLSearchParams(window.location.search);
   const id = parseInt(params.get('id'));
@@ -108,12 +126,7 @@ async function loadProjet() {
       return;
     }
 
-    // Remplir le contenu
     document.title = `${projet.titre} — Léo Loyen`;
-
-    if (projet.image) {
-      document.getElementById('hero-img').style.backgroundImage = `url('${projet.image}')`;
-    }
 
     const catLabel = projet.categorie === 'evenementiel' ? 'Événementiel' : 'Archviz';
     document.getElementById('p-cat').textContent = catLabel;
@@ -122,18 +135,29 @@ async function loadProjet() {
     document.getElementById('p-desc').textContent = projet.description || '';
     document.getElementById('p-texte').textContent = projet.texte || '';
 
-    if (projet.date) {
+    // Date / année
+    if (projet.annee) {
+      document.getElementById('p-date').textContent = projet.annee;
+    } else if (projet.date) {
       const d = new Date(projet.date);
       document.getElementById('p-date').textContent = d.toLocaleDateString('fr-FR', { year:'numeric', month:'long' });
     }
 
-    // Galerie images supplémentaires
-    if (projet.images && projet.images.length) {
-      const gallery = document.getElementById('p-gallery');
-      gallery.innerHTML = projet.images.map((src, i) =>
-        `<img src="${src}" alt="Image ${i+1} — ${projet.titre}" ${i===0 ? 'class="full-width"' : ''} />`
-      ).join('');
+    // Tags
+    const tags = (projet.tags || '').split(',').map(t=>t.trim()).filter(Boolean);
+    if (tags.length) {
+      document.getElementById('p-tags').innerHTML = tags.map(t=>`<span>${t}</span>`).join('');
     }
+
+    // Galerie : image principale + images supplémentaires
+    galleryImages = [];
+    if (projet.image) galleryImages.push(projet.image);
+    if (projet.images && projet.images.length) galleryImages.push(...projet.images);
+
+    const gallery = document.getElementById('p-gallery');
+    gallery.innerHTML = galleryImages.map((src, i) =>
+      `<img src="${src}" alt="Image ${i+1} — ${projet.titre}" onclick="openLightbox(${i})" loading="lazy" />`
+    ).join('');
 
     document.getElementById('projet-content').style.display = 'block';
 
@@ -142,6 +166,35 @@ async function loadProjet() {
     document.getElementById('not-found').style.display = 'flex';
   }
 }
+
+// LIGHTBOX
+function openLightbox(i) {
+  currentImg = i;
+  document.getElementById('lightbox-img').src = galleryImages[i];
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function navLightbox(e, dir) {
+  e.stopPropagation();
+  currentImg = (currentImg + dir + galleryImages.length) % galleryImages.length;
+  document.getElementById('lightbox-img').src = galleryImages[currentImg];
+}
+
+// Fermer en cliquant sur le fond
+document.getElementById('lightbox').addEventListener('click', () => closeLightbox());
+
+// Navigation clavier
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(e, -1);
+  if (e.key === 'ArrowRight') navLightbox(e, 1);
+});
 
 loadProjet();
 </script>
