@@ -412,31 +412,7 @@ const countIO=new IntersectionObserver(es=>es.forEach(e=>{
   requestAnimationFrame(tick);
 }),{threshold:.6});
 document.querySelectorAll('[data-count]').forEach(el=>countIO.observe(el));
-const SHOTS=[
-  {cat:'event',t:'Concert — Main Stage',img:'1493225457124-a3eb161ffa5f'},
-  {cat:'archviz',t:'Loft — Séjour',img:'1567767292278-a4f21aa2d36e'},
-  {cat:'event',t:'Festival — Nuit néon',img:'1514525253161-7a46d19cd819'},
-  {cat:'archviz',t:'Villa — Extérieur',img:'1564013799919-ab600027ffc6'},
-  {cat:'event',t:'Corporate — Keynote',img:'1505373877841-8d25f7d46678'},
-  {cat:'archviz',t:'Cuisine — Détail',img:'1556911220-bff31c812dba'},
-  {cat:'event',t:'Théâtre — Rideau',img:'1503095396549-807759245b35'},
-  {cat:'archviz',t:'Bureau — Open space',img:'1497366216548-37526070297c'},
-  {cat:'event',t:'Show — Faisceaux',img:'1470229722913-7c0e2dbbafd3'},
-];
-const gal=document.getElementById('gallery');
-function renderGallery(f){
-  gal.innerHTML=SHOTS.filter(s=>f==='all'||s.cat===f).map(s=>`
-    <div class="shot reveal in" data-cat="${s.cat}">
-      <div class="shot-img" style="background-image:url('https://images.unsplash.com/photo-${s.img}?w=700&q=65')"></div>
-      <span class="shot-tag">${s.cat==='event'?'Événementiel':'Archviz'}</span>
-      <div class="shot-meta"><div class="cat">${s.cat==='event'?'Scénographie':'Architecture'}</div><h4>${s.t}</h4></div>
-    </div>`).join('');
-}
-renderGallery('all');
-document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');renderGallery(b.dataset.f);
-});
+
 const cg=document.getElementById('cg');
 if(cg&&matchMedia('(pointer:fine)').matches){
   let cx=innerWidth/2,cy=innerHeight/2,tx=cx,ty=cy;
