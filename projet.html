@@ -20,6 +20,16 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Clash Display',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 
+/* GRILLE DE FOND (z-index 0, derrière tout) */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(circle at 50% 0%,#000 0%,transparent 85%);opacity:.55;animation:gridpulse 8s ease-in-out infinite}
+@keyframes gridpulse{0%,100%{opacity:.45}50%{opacity:.75}}
+
+/* GLOW qui suit la souris (z-index 1, derrière le contenu) */
+#cg{position:fixed;top:0;left:0;width:520px;height:520px;pointer-events:none;z-index:1;background:radial-gradient(circle,rgba(64,95,250,.18),rgba(9,187,200,.08) 40%,transparent 70%);will-change:transform}
+
+/* Tout le contenu passe DEVANT (z-index 10) */
+nav, .projet-body, #loading, #not-found{position:relative;z-index:10}
+
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;backdrop-filter:blur(12px);background:rgba(6,7,12,.95);border-bottom:1px solid var(--line)}
 .logo{font-family:'Clash Display';font-weight:700;font-size:17px;letter-spacing:.5px}
@@ -43,7 +53,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 
 /* GALERIE IMAGES - 3 colonnes */
 .projet-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 0 60px}
-.projet-gallery img{width:100%;border-radius:12px;border:1px solid var(--line2);aspect-ratio:4/3;object-fit:cover;transition:.3s;cursor:pointer;display:block}
+.projet-gallery img{width:100%;border-radius:12px;border:1px solid var(--line2);aspect-ratio:4/3;object-fit:cover;transition:.3s;cursor:pointer;display:block;background:var(--panel)}
 .projet-gallery img:hover{transform:scale(1.02);border-color:var(--cyan);box-shadow:0 0 30px -8px rgba(64,95,250,.5)}
 
 /* LIGHTBOX */
@@ -68,6 +78,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 </style>
 </head>
 <body>
+
+<div id="cg"></div>
 
 <nav>
   <div class="logo">Léo Loyen</div>
@@ -107,6 +119,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 </div>
 
 <script>
+// GLOW qui suit la souris
+const cg = document.getElementById('cg');
+if (cg && matchMedia('(pointer:fine)').matches) {
+  let cx = innerWidth/2, cy = innerHeight/2, tx = cx, ty = cy;
+  addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
+  (function loop(){
+    cx += (tx-cx)*.12; cy += (ty-cy)*.12;
+    cg.style.transform = `translate(${cx}px,${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+} else if (cg) {
+  cg.style.display = 'none';
+}
+
 let galleryImages = [];
 let currentImg = 0;
 
