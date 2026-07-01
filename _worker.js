@@ -57,19 +57,24 @@ async function handleAPI(request, env, path) {
 
   // ─── UPLOAD IMAGE VERS R2 ───────────────────────────────────
   if (path === "/api/upload" && request.method === "POST") {
-    const formData = await request.formData();
-    const file = formData.get("file");
-    if (!file) return json({ error: "Aucun fichier" }, 400, headers);
+    try {
+      const formData = await request.formData();
+      const file = formData.get("file");
+      if (!file) return json({ error: "Aucun fichier" }, 400, headers);
 
-    const ext = file.name.split(".").pop();
-    const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const ext = (file.name || "image").split(".").pop().toLowerCase();
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const buffer = await file.arrayBuffer();
 
-    await env.PORTFOLIO_IMAGES.put(key, file.stream(), {
-      httpMetadata: { contentType: file.type }
-    });
+      await env.PORTFOLIO_IMAGES.put(key, buffer, {
+        httpMetadata: { contentType: file.type || "image/jpeg" }
+      });
 
-    const publicUrl = `https://pub-e5aa0271964e46d8a5f1f937cf2d1f7d.r2.dev/${key}`;
-    return json({ success: true, url: publicUrl }, 200, headers);
+      const publicUrl = `https://pub-e5aa0271964e46d8a5f1f937cf2d1f7d.r2.dev/${key}`;
+      return json({ success: true, url: publicUrl }, 200, headers);
+    } catch(e) {
+      return json({ error: "Upload failed: " + e.message }, 500, headers);
+    }
   }
 
   return json({ error: "Not found" }, 404, headers);
