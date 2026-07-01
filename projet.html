@@ -149,9 +149,8 @@ async function loadProjet() {
       document.getElementById('p-tags').innerHTML = tags.map(t=>`<span>${t}</span>`).join('');
     }
 
-    // Galerie : image principale + images supplémentaires
+    // Galerie : uniquement les images supplémentaires (pas la miniature)
     galleryImages = [];
-    if (projet.image) galleryImages.push(projet.image);
     if (projet.images && projet.images.length) galleryImages.push(...projet.images);
 
     const gallery = document.getElementById('p-gallery');
